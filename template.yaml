@@ -1,0 +1,191 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Dynamic DNS Management System with AWS Route 53
+
+Parameters:
+  AdminUsername:
+    Type: String
+    Default: admin
+    Description: Admin username for dashboard access
+
+  AdminPassword:
+    Type: String
+    NoEcho: true
+    Description: Admin password for dashboard access
+
+  AppSecret:
+    Type: String
+    NoEcho: true
+    Description: Secret key for session signing (32+ bytes recommended)
+
+  DomainName:
+    Type: String
+    Default: DISABLED
+    Description: Custom domain name for the API (set to DISABLED to skip)
+
+  HostedZoneId:
+    Type: String
+    Default: DISABLED
+    Description: Route 53 Hosted Zone ID for the custom domain (set to DISABLED to skip)
+
+  CloudFrontCertificateArn:
+    Type: String
+    Default: DISABLED
+    Description: ARN of ACM certificate in us-east-1 for API Gateway custom domain (set to DISABLED to skip)
+
+Conditions:
+  CustomDomainEnabled:
+    !And
+      - !Not [!Equals [!Ref DomainName, DISABLED]]
+      - !Not [!Equals [!Ref HostedZoneId, DISABLED]]
+      - !Not [!Equals [!Ref CloudFrontCertificateArn, DISABLED]]
+
+Globals:
+  Function:
+    Timeout: 60
+    MemorySize: 1024
+    Runtime: provided.al2023
+    Architectures:
+      - arm64
+
+Resources:
+  # DynamoDB Table - Single Table Design
+  DynamoDBTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub ${AWS::StackName}-table
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: PK
+          AttributeType: S
+        - AttributeName: SK
+          AttributeType: S
+      KeySchema:
+        - AttributeName: PK
+          KeyType: HASH
+        - AttributeName: SK
+          KeyType: RANGE
+      TimeToLiveSpecification:
+        AttributeName: ttl
+        Enabled: true
+
+  # Lambda Execution Role
+  LambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ${AWS::StackName}-lambda-role
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: Route53Access
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - route53:ListHostedZones
+                  - route53:GetHostedZone
+                  - route53:ListResourceRecordSets
+                  - route53:ChangeResourceRecordSets
+                Resource: '*'
+        - PolicyName: DynamoDBAccess
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - dynamodb:GetItem
+                  - dynamodb:PutItem
+                  - dynamodb:UpdateItem
+                  - dynamodb:DeleteItem
+                  - dynamodb:Query
+                  - dynamodb:Scan
+                Resource: !GetAtt DynamoDBTable.Arn
+
+  # Lambda Function
+  DynamicDnsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-function
+      Handler: bootstrap
+      CodeUri: .
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Environment:
+        Variables:
+          DYNAMODB_TABLE: !Ref DynamoDBTable
+          ADMIN_USERNAME: !Ref AdminUsername
+          ADMIN_PASSWORD: !Ref AdminPassword
+          APP_SECRET: !Ref AppSecret
+      Events:
+        ApiEvent:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+
+  # HTTP API Gateway
+  HttpApi:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      StageName: $default
+      CorsConfiguration:
+        AllowOrigins:
+          - '*'
+        AllowMethods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - OPTIONS
+        AllowHeaders:
+          - '*'
+
+  # Custom Domain Resources (Conditional)
+  ApiGatewayCustomDomain:
+    Type: AWS::ApiGatewayV2::DomainName
+    Condition: CustomDomainEnabled
+    Properties:
+      DomainName: !Ref DomainName
+      DomainNameConfigurations:
+        - EndpointType: REGIONAL
+          CertificateArn: !Ref CloudFrontCertificateArn
+
+  ApiGatewayMapping:
+    Type: AWS::ApiGatewayV2::ApiMapping
+    Condition: CustomDomainEnabled
+    DependsOn: ApiGatewayCustomDomain
+    Properties:
+      ApiId: !Ref HttpApi
+      DomainName: !Ref DomainName
+      Stage: $default
+
+  Route53AliasRecord:
+    Type: AWS::Route53::RecordSet
+    Condition: CustomDomainEnabled
+    Properties:
+      HostedZoneId: !Ref HostedZoneId
+      Name: !Ref DomainName
+      Type: A
+      AliasTarget:
+        DNSName: !GetAtt ApiGatewayCustomDomain.RegionalDomainName
+        HostedZoneId: !GetAtt ApiGatewayCustomDomain.RegionalHostedZoneId
+
+Outputs:
+  ApiUrl:
+    Description: API Gateway endpoint URL
+    Value: !Sub https://${HttpApi}.execute-api.${AWS::Region}.amazonaws.com
+
+  CustomDomainUrl:
+    Description: Custom domain URL (if enabled)
+    Condition: CustomDomainEnabled
+    Value: !Sub https://${DomainName}
+
+  DynamoDBTableName:
+    Description: DynamoDB table name
+    Value: !Ref DynamoDBTable

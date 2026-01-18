@@ -1,0 +1,59 @@
+{{define "content"}}
+<div class="sm:flex sm:items-center">
+    <div class="sm:flex-auto">
+        <h1 class="text-2xl font-semibold leading-6 text-white">Hosted Zones</h1>
+        <p class="mt-2 text-sm text-gray-400">A list of all Route 53 hosted zones in your AWS account.</p>
+    </div>
+</div>
+
+<div class="mt-8 flow-root">
+    <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
+        <div class="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
+            <div class="overflow-hidden shadow ring-1 ring-gray-700 rounded-lg">
+                <table class="min-w-full divide-y divide-gray-700">
+                    <thead class="bg-gray-800">
+                        <tr>
+                            <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-300 sm:pl-6">Name</th>
+                            <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-300">ID</th>
+                            <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-300">Record Count</th>
+                            <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-300">Type</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-700 bg-gray-800/50" id="zones-table-body">
+                        {{if .Zones}}
+                        {{range .Zones}}
+                        <tr class="hover:bg-gray-700 cursor-pointer transition-colors"
+                            hx-get="/zones/{{.ID}}"
+                            hx-target="#main-content"
+                            hx-push-url="true"
+                            onclick="window.location.href='/zones/{{.ID}}'">
+                            <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-white sm:pl-6">{{.Name}}</td>
+                            <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-400 font-mono">{{.ID}}</td>
+                            <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-400">{{.RecordCount}}</td>
+                            <td class="whitespace-nowrap px-3 py-4 text-sm">
+                                {{if .IsPrivate}}
+                                <span class="inline-flex items-center rounded-md bg-purple-900 px-2 py-1 text-xs font-medium text-purple-300 ring-1 ring-inset ring-purple-700">Private</span>
+                                {{else}}
+                                <span class="inline-flex items-center rounded-md bg-green-900 px-2 py-1 text-xs font-medium text-green-300 ring-1 ring-inset ring-green-700">Public</span>
+                                {{end}}
+                            </td>
+                        </tr>
+                        {{end}}
+                        {{else}}
+                        <tr>
+                            <td colspan="4" class="px-6 py-12 text-center text-sm text-gray-400">
+                                <svg class="mx-auto h-12 w-12 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+                                </svg>
+                                <p class="mt-4">No hosted zones found.</p>
+                                <p class="mt-1 text-gray-500">Create a hosted zone in AWS Route 53 to get started.</p>
+                            </td>
+                        </tr>
+                        {{end}}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{{end}}

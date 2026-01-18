@@ -1,0 +1,9 @@
+version = 0.1
+
+[default.deploy.parameters]
+stack_name = "dynamic-dns-stack"
+s3_bucket = "sam-deploy-dynamic-dns-us-east-2"
+capabilities = "CAPABILITY_IAM"
+confirm_changeset = false
+fail_on_empty_changeset = false
+region = "us-east-2"

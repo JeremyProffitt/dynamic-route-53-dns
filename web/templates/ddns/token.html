@@ -1,0 +1,145 @@
+{{define "content"}}
+<div class="max-w-3xl mx-auto">
+    <!-- Success Message -->
+    <div class="bg-green-900/50 border border-green-700 rounded-lg p-6 mb-8">
+        <div class="flex">
+            <div class="flex-shrink-0">
+                <svg class="h-6 w-6 text-green-400" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd" />
+                </svg>
+            </div>
+            <div class="ml-3">
+                <h3 class="text-lg font-semibold text-green-400">
+                    {{if .IsNew}}DDNS Record Created Successfully{{else}}Token Regenerated Successfully{{end}}
+                </h3>
+                <p class="mt-1 text-sm text-green-300">
+                    Your DDNS record for <strong>{{.Hostname}}</strong> is ready to use.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Token Display -->
+    <div class="bg-gray-800 shadow rounded-lg border border-gray-700 p-6 mb-8">
+        <div class="flex items-center justify-between mb-4">
+            <h2 class="text-lg font-semibold text-white">Your API Token</h2>
+            <span class="inline-flex items-center rounded-md bg-yellow-900 px-2 py-1 text-xs font-medium text-yellow-300 ring-1 ring-inset ring-yellow-700">
+                <svg class="-ml-0.5 mr-1 h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 5zm0 9a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" />
+                </svg>
+                Save this now!
+            </span>
+        </div>
+
+        <div class="bg-gray-900 rounded-lg p-4 mb-4">
+            <code id="token-value" class="text-lg font-mono text-green-400 break-all select-all">{{.Token}}</code>
+        </div>
+
+        <button onclick="copyToken()" id="copy-btn" class="inline-flex items-center rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 transition-colors">
+            <svg class="-ml-0.5 mr-1.5 h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                <path d="M7 3.5A1.5 1.5 0 018.5 2h3.879a1.5 1.5 0 011.06.44l3.122 3.12A1.5 1.5 0 0117 6.622V12.5a1.5 1.5 0 01-1.5 1.5h-1v-3.379a3 3 0 00-.879-2.121L10.5 5.379A3 3 0 008.379 4.5H7v-1z" />
+                <path d="M4.5 6A1.5 1.5 0 003 7.5v9A1.5 1.5 0 004.5 18h7a1.5 1.5 0 001.5-1.5v-5.879a1.5 1.5 0 00-.44-1.06L9.44 6.439A1.5 1.5 0 008.378 6H4.5z" />
+            </svg>
+            <span id="copy-text">Copy to Clipboard</span>
+        </button>
+
+        <div class="mt-6 rounded-md bg-red-900/50 border border-red-700 p-4">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 5zm0 9a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" />
+                    </svg>
+                </div>
+                <div class="ml-3">
+                    <h3 class="text-sm font-medium text-red-400">This token will only be shown once!</h3>
+                    <p class="mt-1 text-sm text-red-300">
+                        Make sure to copy and save this token securely. You will not be able to see it again.
+                        If you lose it, you will need to regenerate a new token.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- UDM Pro Setup Instructions -->
+    <div class="bg-gray-800 shadow rounded-lg border border-gray-700 p-6 mb-8">
+        <h2 class="text-lg font-semibold text-white mb-4">UDM Pro Setup Instructions</h2>
+        <p class="text-sm text-gray-400 mb-4">
+            Configure your UniFi Dream Machine Pro to automatically update this DDNS record.
+        </p>
+
+        <ol class="list-decimal list-inside space-y-4 text-sm text-gray-300">
+            <li>
+                <span class="font-medium text-white">Navigate to Settings</span>
+                <p class="ml-6 mt-1 text-gray-400">Go to Settings &gt; Internet &gt; WAN &gt; Dynamic DNS</p>
+            </li>
+            <li>
+                <span class="font-medium text-white">Add a new DDNS entry</span>
+                <p class="ml-6 mt-1 text-gray-400">Click "Create New Dynamic DNS"</p>
+            </li>
+            <li>
+                <span class="font-medium text-white">Configure the settings:</span>
+                <div class="ml-6 mt-2 space-y-2">
+                    <div class="bg-gray-900 rounded p-3">
+                        <div class="grid grid-cols-3 gap-2 text-xs">
+                            <div class="text-gray-400">Service:</div>
+                            <div class="col-span-2 font-mono text-white">custom</div>
+
+                            <div class="text-gray-400">Hostname:</div>
+                            <div class="col-span-2 font-mono text-white">{{.Hostname}}</div>
+
+                            <div class="text-gray-400">Username:</div>
+                            <div class="col-span-2 font-mono text-white">token</div>
+
+                            <div class="text-gray-400">Password:</div>
+                            <div class="col-span-2 font-mono text-green-400 break-all">{{.Token}}</div>
+
+                            <div class="text-gray-400">Server:</div>
+                            <div class="col-span-2 font-mono text-white">{{.UpdateURL}}</div>
+                        </div>
+                    </div>
+                </div>
+            </li>
+            <li>
+                <span class="font-medium text-white">Save and test</span>
+                <p class="ml-6 mt-1 text-gray-400">Save the configuration and verify the connection status shows as successful.</p>
+            </li>
+        </ol>
+
+        <div class="mt-6 bg-blue-900/30 border border-blue-700 rounded-lg p-4">
+            <h4 class="text-sm font-medium text-blue-400 mb-2">Update URL for manual testing:</h4>
+            <code class="block text-xs font-mono text-blue-300 break-all bg-gray-900 p-2 rounded">
+                curl -X POST "{{.UpdateURL}}/update?hostname={{.Hostname}}&myip=YOUR_IP" -H "Authorization: Bearer {{.Token}}"
+            </code>
+        </div>
+    </div>
+
+    <!-- Back Button -->
+    <div class="flex justify-center">
+        <a href="/ddns" class="inline-flex items-center rounded-md bg-gray-700 px-4 py-2 text-sm font-semibold text-gray-300 shadow-sm hover:bg-gray-600 transition-colors">
+            <svg class="-ml-0.5 mr-1.5 h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M17 10a.75.75 0 01-.75.75H5.612l4.158 3.96a.75.75 0 11-1.04 1.08l-5.5-5.25a.75.75 0 010-1.08l5.5-5.25a.75.75 0 111.04 1.08L5.612 9.25H16.25A.75.75 0 0117 10z" clip-rule="evenodd" />
+            </svg>
+            Back to DDNS Records
+        </a>
+    </div>
+</div>
+
+<script>
+function copyToken() {
+    const tokenValue = document.getElementById('token-value').textContent;
+    navigator.clipboard.writeText(tokenValue).then(function() {
+        const copyBtn = document.getElementById('copy-btn');
+        const copyText = document.getElementById('copy-text');
+        copyText.textContent = 'Copied!';
+        copyBtn.classList.remove('bg-blue-600', 'hover:bg-blue-500');
+        copyBtn.classList.add('bg-green-600', 'hover:bg-green-500');
+        setTimeout(function() {
+            copyText.textContent = 'Copy to Clipboard';
+            copyBtn.classList.remove('bg-green-600', 'hover:bg-green-500');
+            copyBtn.classList.add('bg-blue-600', 'hover:bg-blue-500');
+        }, 2000);
+    });
+}
+</script>
+{{end}}

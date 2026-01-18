@@ -1,0 +1,85 @@
+{{define "content"}}
+<div class="mb-6">
+    <a href="/ddns" class="inline-flex items-center text-sm font-medium text-blue-400 hover:text-blue-300 transition-colors">
+        <svg class="mr-1 h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M17 10a.75.75 0 01-.75.75H5.612l4.158 3.96a.75.75 0 11-1.04 1.08l-5.5-5.25a.75.75 0 010-1.08l5.5-5.25a.75.75 0 111.04 1.08L5.612 9.25H16.25A.75.75 0 0117 10z" clip-rule="evenodd" />
+        </svg>
+        Back to DDNS Records
+    </a>
+</div>
+
+<div class="max-w-2xl">
+    <div class="sm:flex-auto mb-8">
+        <h1 class="text-2xl font-semibold leading-6 text-white">Create DDNS Record</h1>
+        <p class="mt-2 text-sm text-gray-400">Create a new dynamic DNS record that can be updated via API token.</p>
+    </div>
+
+    <div class="bg-gray-800 shadow rounded-lg border border-gray-700">
+        <form action="/ddns/new" method="POST" class="px-6 py-6 space-y-6">
+            <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
+
+            {{if .Error}}
+            <div class="rounded-md bg-red-900 border border-red-700 p-4">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z" clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                    <div class="ml-3">
+                        <p class="text-sm font-medium text-red-400">{{.Error}}</p>
+                    </div>
+                </div>
+            </div>
+            {{end}}
+
+            <div>
+                <label for="zone_id" class="block text-sm font-medium leading-6 text-gray-300">Hosted Zone</label>
+                <div class="mt-2">
+                    <select id="zone_id" name="zone_id" required
+                            class="block w-full rounded-md border-0 bg-gray-700 py-2 px-3 text-white shadow-sm ring-1 ring-inset ring-gray-600 focus:ring-2 focus:ring-inset focus:ring-blue-500 sm:text-sm sm:leading-6">
+                        <option value="">Select a zone...</option>
+                        {{range .Zones}}
+                        <option value="{{.ID}}" {{if eq .ID $.SelectedZone}}selected{{end}}>{{.Name}}</option>
+                        {{end}}
+                    </select>
+                </div>
+                <p class="mt-2 text-sm text-gray-500">The Route 53 hosted zone where the record will be created.</p>
+            </div>
+
+            <div>
+                <label for="hostname" class="block text-sm font-medium leading-6 text-gray-300">Hostname</label>
+                <div class="mt-2">
+                    <div class="flex rounded-md shadow-sm">
+                        <input type="text" name="hostname" id="hostname" required
+                               placeholder="subdomain"
+                               value="{{.Hostname}}"
+                               class="block w-full rounded-l-md border-0 bg-gray-700 py-2 px-3 text-white shadow-sm ring-1 ring-inset ring-gray-600 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-500 sm:text-sm sm:leading-6">
+                        <span class="inline-flex items-center rounded-r-md border border-l-0 border-gray-600 bg-gray-600 px-3 text-gray-400 sm:text-sm">.zone.com</span>
+                    </div>
+                </div>
+                <p class="mt-2 text-sm text-gray-500">Enter just the subdomain part (e.g., "home" for home.example.com).</p>
+            </div>
+
+            <div>
+                <label for="ttl" class="block text-sm font-medium leading-6 text-gray-300">TTL (seconds)</label>
+                <div class="mt-2">
+                    <input type="number" name="ttl" id="ttl" min="60" max="86400"
+                           value="{{if .TTL}}{{.TTL}}{{else}}60{{end}}"
+                           class="block w-32 rounded-md border-0 bg-gray-700 py-2 px-3 text-white shadow-sm ring-1 ring-inset ring-gray-600 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-500 sm:text-sm sm:leading-6">
+                </div>
+                <p class="mt-2 text-sm text-gray-500">Time-to-live in seconds. Lower values allow faster propagation of IP changes (recommended: 60-300).</p>
+            </div>
+
+            <div class="pt-4 border-t border-gray-700">
+                <div class="flex justify-end gap-3">
+                    <a href="/ddns" class="rounded-md bg-gray-700 px-3 py-2 text-sm font-semibold text-gray-300 shadow-sm hover:bg-gray-600 transition-colors">Cancel</a>
+                    <button type="submit" class="rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 transition-colors">
+                        Create Record
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{{end}}
