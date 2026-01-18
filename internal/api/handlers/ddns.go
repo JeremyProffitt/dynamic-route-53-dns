@@ -113,6 +113,7 @@ func (h *DDNSHandler) CreateDDNS(c *fiber.Ctx) error {
 		"CSRFToken":   c.Locals("csrf_token"),
 		"Hostname":    hostname,
 		"Token":       result.Token,
+		"ServerURL":   c.Hostname(),
 	})
 }
 
@@ -135,6 +136,7 @@ func (h *DDNSHandler) DDNSDetail(c *fiber.Ctx) error {
 		"CSRFToken":   c.Locals("csrf_token"),
 		"Record":      record,
 		"History":     history,
+		"ServerURL":   c.Hostname(),
 	})
 }
 
@@ -159,6 +161,7 @@ func (h *DDNSHandler) UpdateDDNS(c *fiber.Ctx) error {
 			"Record":      record,
 			"History":     history,
 			"FlashError":  "Failed to update: " + err.Error(),
+			"ServerURL":   c.Hostname(),
 		})
 	}
 
@@ -173,6 +176,7 @@ func (h *DDNSHandler) UpdateDDNS(c *fiber.Ctx) error {
 		"Record":       record,
 		"History":      history,
 		"FlashSuccess": "Record updated successfully",
+		"ServerURL":    c.Hostname(),
 	})
 }
 
@@ -205,6 +209,7 @@ func (h *DDNSHandler) RegenerateToken(c *fiber.Ctx) error {
 		"Hostname":    hostname,
 		"Token":       token,
 		"Regenerated": true,
+		"ServerURL":   c.Hostname(),
 	})
 }
 

@@ -125,6 +125,28 @@
 
                     <hr class="my-6 border-slate-700">
 
+                    <h3 class="text-md font-medium text-white mb-4">Dream Machine Pro Configuration</h3>
+                    <dl class="space-y-2 text-sm mb-4">
+                        <div class="flex">
+                            <dt class="text-gray-400 w-24">Service:</dt>
+                            <dd class="text-white font-mono">custom</dd>
+                        </div>
+                        <div class="flex">
+                            <dt class="text-gray-400 w-24">Hostname:</dt>
+                            <dd class="text-white font-mono">{{ .Record.Hostname }}</dd>
+                        </div>
+                        <div class="flex">
+                            <dt class="text-gray-400 w-24">Username:</dt>
+                            <dd class="text-white font-mono">admin</dd>
+                        </div>
+                        <div class="flex">
+                            <dt class="text-gray-400 w-24">Server:</dt>
+                            <dd class="text-white font-mono">{{ .ServerURL }}</dd>
+                        </div>
+                    </dl>
+
+                    <hr class="my-6 border-slate-700">
+
                     <h3 class="text-md font-medium text-red-400 mb-4">Danger Zone</h3>
                     <form action="/ddns/{{ .Record.Hostname }}/delete" method="POST">
                         <input type="hidden" name="_csrf" value="{{ .CSRFToken }}">
