@@ -48,7 +48,7 @@ jobs:
               AppSecret=${{ secrets.APP_SECRET }} \
               DomainName=${{ vars.DOMAIN_NAME || 'DISABLED' }} \
               HostedZoneId=${{ vars.HOSTED_ZONE_ID || 'DISABLED' }} \
-              CloudFrontCertificateArn=${{ vars.CLOUDFRONT_CERT_ARN || 'DISABLED' }}
+              CertificateArn=${{ vars.CERTIFICATE_ARN || 'DISABLED' }}
 
       - name: Get outputs
         run: |

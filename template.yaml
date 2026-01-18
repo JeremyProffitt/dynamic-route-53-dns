@@ -28,13 +28,16 @@ Parameters:
     Default: DISABLED
     Description: Route53 Hosted Zone ID for custom domain (or DISABLED)
 
-  CloudFrontCertificateArn:
+  CertificateArn:
     Type: String
     Default: DISABLED
-    Description: ARN of ACM certificate in us-east-1 for CloudFront (or DISABLED)
+    Description: ARN of ACM certificate in the same region for API Gateway custom domain (or DISABLED)
 
 Conditions:
-  HasCustomDomain: !Not [!Equals [!Ref DomainName, DISABLED]]
+  HasCustomDomain: !And
+    - !Not [!Equals [!Ref DomainName, DISABLED]]
+    - !Not [!Equals [!Ref CertificateArn, DISABLED]]
+    - !Not [!Equals [!Ref HostedZoneId, DISABLED]]
 
 Globals:
   Function:
@@ -122,7 +125,7 @@ Resources:
       DomainName: !Ref DomainName
       DomainNameConfigurations:
         - EndpointType: REGIONAL
-          CertificateArn: !Ref CloudFrontCertificateArn
+          CertificateArn: !Ref CertificateArn
 
   ApiMapping:
     Type: AWS::ApiGatewayV2::ApiMapping
