@@ -34,7 +34,12 @@ jobs:
         with:
           use-installer: true
 
-      - name: Build and Deploy
+      - name: Build Go binary
+        run: |
+          cd cmd/lambda
+          GOOS=linux GOARCH=arm64 CGO_ENABLED=0 go build -tags lambda.norpc -o bootstrap .
+
+      - name: Deploy
         run: |
           sam deploy \
             --stack-name dynamic-dns-stack \
