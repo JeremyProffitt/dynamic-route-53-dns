@@ -1,0 +1,58 @@
+name: Deploy to AWS
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.21'
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ vars.AWS_REGION || 'us-east-2' }}
+
+      - name: Setup SAM CLI
+        uses: aws-actions/setup-sam@v2
+        with:
+          use-installer: true
+
+      - name: Build and Deploy
+        run: |
+          sam deploy \
+            --stack-name dynamic-dns-stack \
+            --resolve-s3 \
+            --capabilities CAPABILITY_IAM \
+            --no-confirm-changeset \
+            --no-fail-on-empty-changeset \
+            --parameter-overrides \
+              AdminUsername=${{ vars.ADMIN_USER || 'admin' }} \
+              AdminPassword=${{ secrets.ADMIN_PASSWORD }} \
+              AppSecret=${{ secrets.APP_SECRET }} \
+              DomainName=${{ vars.DOMAIN_NAME || 'DISABLED' }} \
+              HostedZoneId=${{ vars.HOSTED_ZONE_ID || 'DISABLED' }} \
+              CloudFrontCertificateArn=${{ vars.CLOUDFRONT_CERT_ARN || 'DISABLED' }}
+
+      - name: Get outputs
+        run: |
+          aws cloudformation describe-stacks \
+            --stack-name dynamic-dns-stack \
+            --query 'Stacks[0].Outputs' \
+            --output table

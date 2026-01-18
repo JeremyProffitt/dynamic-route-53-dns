@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ .PageTitle }}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>tailwind.config = { darkMode: 'class' }</script>
+    <style>body { background-color: #0f172a; color: #e2e8f0; }</style>
+</head>
+<body class="min-h-screen">
+    <nav class="bg-slate-800 border-b border-slate-700">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center">
+                    <span class="text-xl font-bold text-white">Dynamic DNS</span>
+                    <div class="ml-10 flex items-baseline space-x-4">
+                        <a href="/zones" class="px-3 py-2 rounded-md text-sm font-medium text-gray-300 hover:bg-slate-700 hover:text-white">Zones</a>
+                        <a href="/ddns" class="px-3 py-2 rounded-md text-sm font-medium bg-slate-900 text-white">DDNS Records</a>
+                    </div>
+                </div>
+                <div class="flex items-center">
+                    <span class="text-gray-300 mr-4">{{ .Username }}</span>
+                    <form action="/logout" method="POST">
+                        <input type="hidden" name="_csrf" value="{{ .CSRFToken }}">
+                        <button type="submit" class="px-3 py-2 rounded-md text-sm font-medium text-gray-300 hover:bg-slate-700 hover:text-white">Logout</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+        <div class="px-4 sm:px-0">
+            <div class="max-w-2xl mx-auto">
+                <div class="bg-slate-800 rounded-lg border border-slate-700 p-6">
+                    <div class="text-center mb-6">
+                        <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-800 mb-4">
+                            <svg class="w-8 h-8 text-green-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                        </div>
+                        <h1 class="text-2xl font-bold text-white">
+                            {{ if .Regenerated }}Token Regenerated{{ else }}DDNS Record Created{{ end }}
+                        </h1>
+                        <p class="text-gray-400 mt-2">{{ .Hostname }}</p>
+                    </div>
+
+                    <div class="bg-yellow-900 border border-yellow-700 rounded-lg p-4 mb-6">
+                        <div class="flex items-start">
+                            <svg class="w-5 h-5 text-yellow-400 mt-0.5 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                            </svg>
+                            <div>
+                                <h3 class="text-yellow-200 font-medium">Important: Save This Token</h3>
+                                <p class="text-yellow-300 text-sm mt-1">
+                                    This token will only be shown once. Store it securely. You'll need it to configure your DDNS client.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium text-gray-300 mb-2">Update Token</label>
+                        <div class="flex">
+                            <input type="text" id="token" value="{{ .Token }}" readonly
+                                   class="flex-1 px-3 py-2 bg-slate-900 border border-slate-600 rounded-l-md text-white font-mono text-sm">
+                            <button onclick="copyToken()" type="button"
+                                    class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-r-md">
+                                Copy
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-900 rounded-lg p-4 mb-6">
+                        <h3 class="text-white font-medium mb-3">Ubiquiti Dream Machine Pro Configuration</h3>
+                        <dl class="space-y-2 text-sm">
+                            <div class="flex">
+                                <dt class="text-gray-400 w-24">Service:</dt>
+                                <dd class="text-white font-mono">custom</dd>
+                            </div>
+                            <div class="flex">
+                                <dt class="text-gray-400 w-24">Hostname:</dt>
+                                <dd class="text-white font-mono">{{ .Hostname }}</dd>
+                            </div>
+                            <div class="flex">
+                                <dt class="text-gray-400 w-24">Username:</dt>
+                                <dd class="text-white font-mono">admin</dd>
+                            </div>
+                            <div class="flex">
+                                <dt class="text-gray-400 w-24">Password:</dt>
+                                <dd class="text-white font-mono text-xs break-all">{{ .Token }}</dd>
+                            </div>
+                            <div class="flex">
+                                <dt class="text-gray-400 w-24">Server:</dt>
+                                <dd class="text-white font-mono">your-ddns-server.com</dd>
+                            </div>
+                        </dl>
+                    </div>
+
+                    <div class="flex justify-center space-x-4">
+                        <a href="/ddns/{{ .Hostname }}" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-md">
+                            View Record Details
+                        </a>
+                        <a href="/ddns" class="px-4 py-2 bg-slate-600 hover:bg-slate-500 text-white text-sm font-medium rounded-md">
+                            Back to DDNS Records
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        function copyToken() {
+            const token = document.getElementById('token');
+            token.select();
+            document.execCommand('copy');
+
+            // Show feedback
+            const btn = event.target;
+            const originalText = btn.innerText;
+            btn.innerText = 'Copied!';
+            setTimeout(() => { btn.innerText = originalText; }, 2000);
+        }
+    </script>
+</body>
+</html>

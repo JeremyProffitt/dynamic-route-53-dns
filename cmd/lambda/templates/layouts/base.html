@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ .PageTitle }}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        dark: {
+                            bg: '#0f172a',
+                            card: '#1e293b',
+                            border: '#334155',
+                            text: '#e2e8f0',
+                            muted: '#94a3b8'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #0f172a;
+            color: #e2e8f0;
+        }
+        .card {
+            background-color: #1e293b;
+            border-color: #334155;
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+    <!-- Navigation -->
+    <nav class="bg-slate-800 border-b border-slate-700">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center">
+                    <span class="text-xl font-bold text-white">Dynamic DNS</span>
+                    {{ if .IsLoggedIn }}
+                    <div class="ml-10 flex items-baseline space-x-4">
+                        <a href="/zones" class="px-3 py-2 rounded-md text-sm font-medium {{ if eq .CurrentPath "/zones" }}bg-slate-900 text-white{{ else }}text-gray-300 hover:bg-slate-700 hover:text-white{{ end }}">
+                            Zones
+                        </a>
+                        <a href="/ddns" class="px-3 py-2 rounded-md text-sm font-medium {{ if eq .CurrentPath "/ddns" }}bg-slate-900 text-white{{ else }}text-gray-300 hover:bg-slate-700 hover:text-white{{ end }}">
+                            DDNS Records
+                        </a>
+                    </div>
+                    {{ end }}
+                </div>
+                {{ if .IsLoggedIn }}
+                <div class="flex items-center">
+                    <span class="text-gray-300 mr-4">{{ .Username }}</span>
+                    <form action="/logout" method="POST">
+                        <input type="hidden" name="_csrf" value="{{ .CSRFToken }}">
+                        <button type="submit" class="px-3 py-2 rounded-md text-sm font-medium text-gray-300 hover:bg-slate-700 hover:text-white">
+                            Logout
+                        </button>
+                    </form>
+                </div>
+                {{ end }}
+            </div>
+        </div>
+    </nav>
+
+    <!-- Flash Messages -->
+    {{ if .FlashSuccess }}
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4">
+        <div class="bg-green-800 border border-green-600 text-green-100 px-4 py-3 rounded relative" role="alert">
+            <span class="block sm:inline">{{ .FlashSuccess }}</span>
+        </div>
+    </div>
+    {{ end }}
+    {{ if .FlashError }}
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4">
+        <div class="bg-red-800 border border-red-600 text-red-100 px-4 py-3 rounded relative" role="alert">
+            <span class="block sm:inline">{{ .FlashError }}</span>
+        </div>
+    </div>
+    {{ end }}
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+        {{ .Content }}
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-slate-800 border-t border-slate-700 mt-auto">
+        <div class="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8">
+            <p class="text-center text-gray-400 text-sm">
+                Dynamic DNS Management System
+            </p>
+        </div>
+    </footer>
+</body>
+</html>

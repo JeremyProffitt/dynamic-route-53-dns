@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ .PageTitle }}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>tailwind.config = { darkMode: 'class' }</script>
+    <style>body { background-color: #0f172a; color: #e2e8f0; }</style>
+</head>
+<body class="min-h-screen">
+    <nav class="bg-slate-800 border-b border-slate-700">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center">
+                    <span class="text-xl font-bold text-white">Dynamic DNS</span>
+                    <div class="ml-10 flex items-baseline space-x-4">
+                        <a href="/zones" class="px-3 py-2 rounded-md text-sm font-medium text-gray-300 hover:bg-slate-700 hover:text-white">Zones</a>
+                        <a href="/ddns" class="px-3 py-2 rounded-md text-sm font-medium bg-slate-900 text-white">DDNS Records</a>
+                    </div>
+                </div>
+                <div class="flex items-center">
+                    <span class="text-gray-300 mr-4">{{ .Username }}</span>
+                    <form action="/logout" method="POST">
+                        <input type="hidden" name="_csrf" value="{{ .CSRFToken }}">
+                        <button type="submit" class="px-3 py-2 rounded-md text-sm font-medium text-gray-300 hover:bg-slate-700 hover:text-white">Logout</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    {{ if .FlashError }}
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4">
+        <div class="bg-red-800 border border-red-600 text-red-100 px-4 py-3 rounded relative">{{ .FlashError }}</div>
+    </div>
+    {{ end }}
+
+    <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+        <div class="px-4 sm:px-0">
+            <a href="/ddns" class="text-blue-400 hover:text-blue-300 text-sm">&larr; Back to DDNS Records</a>
+            <h1 class="text-2xl font-bold text-white mt-2 mb-6">Create New DDNS Record</h1>
+
+            <div class="bg-slate-800 rounded-lg border border-slate-700 p-6 max-w-lg">
+                <form action="/ddns" method="POST" class="space-y-6">
+                    <input type="hidden" name="_csrf" value="{{ .CSRFToken }}">
+
+                    <div>
+                        <label for="zone_id" class="block text-sm font-medium text-gray-300 mb-2">Hosted Zone</label>
+                        <select id="zone_id" name="zone_id" required
+                                class="w-full px-3 py-2 bg-slate-900 border border-slate-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="">Select a zone...</option>
+                            {{ range .Zones }}
+                            <option value="{{ .ID }}" {{ if eq $.ZoneID .ID }}selected{{ end }}>{{ .Name }}</option>
+                            {{ end }}
+                        </select>
+                    </div>
+
+                    <div>
+                        <label for="hostname" class="block text-sm font-medium text-gray-300 mb-2">Hostname (FQDN)</label>
+                        <input type="text" id="hostname" name="hostname" required
+                               placeholder="home.example.com"
+                               value="{{ .Hostname }}"
+                               class="w-full px-3 py-2 bg-slate-900 border border-slate-600 rounded-md text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <p class="text-gray-500 text-xs mt-1">Must be a valid subdomain in the selected zone</p>
+                    </div>
+
+                    <div>
+                        <label for="ttl" class="block text-sm font-medium text-gray-300 mb-2">TTL (seconds)</label>
+                        <input type="number" id="ttl" name="ttl" min="60" max="86400"
+                               value="{{ if .TTL }}{{ .TTL }}{{ else }}{{ .DefaultTTL }}{{ end }}"
+                               class="w-full px-3 py-2 bg-slate-900 border border-slate-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <p class="text-gray-500 text-xs mt-1">Recommended: 60 seconds for dynamic records</p>
+                    </div>
+
+                    <div class="flex space-x-4">
+                        <button type="submit"
+                                class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-md">
+                            Create DDNS Record
+                        </button>
+                        <a href="/ddns" class="px-4 py-2 bg-slate-600 hover:bg-slate-500 text-white text-sm font-medium rounded-md">
+                            Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+</body>
+</html>
