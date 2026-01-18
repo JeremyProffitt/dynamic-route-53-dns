@@ -50,14 +50,23 @@ jobs:
         run: GOOS=linux GOARCH=arm64 CGO_ENABLED=0 go build -tags lambda.norpc -o bootstrap ./cmd/lambda/main.go
 
       - name: SAM deploy
+        env:
+          ADMIN_USER: ${{ vars.ADMIN_USER }}
+          ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
+          APP_SECRET: ${{ secrets.APP_SECRET }}
+          DOMAIN_NAME: ${{ vars.DOMAIN_NAME }}
+          HOSTED_ZONE_ID: ${{ vars.HOSTED_ZONE_ID }}
+          CLOUDFRONT_CERT_ARN: ${{ vars.CLOUDFRONT_CERT_ARN }}
         run: |
+          # Build parameter overrides, using defaults for empty values
+          PARAMS="AdminUsername=${ADMIN_USER:-admin}"
+          PARAMS="$PARAMS AdminPassword=${ADMIN_PASSWORD:-changeme}"
+          PARAMS="$PARAMS AppSecret=${APP_SECRET:-$(openssl rand -hex 32)}"
+          PARAMS="$PARAMS DomainName=${DOMAIN_NAME:-DISABLED}"
+          PARAMS="$PARAMS HostedZoneId=${HOSTED_ZONE_ID:-DISABLED}"
+          PARAMS="$PARAMS CloudFrontCertificateArn=${CLOUDFRONT_CERT_ARN:-DISABLED}"
+
           sam deploy \
             --no-confirm-changeset \
             --no-fail-on-empty-changeset \
-            --parameter-overrides \
-              AdminUsername=${{ vars.ADMIN_USER }} \
-              AdminPassword=${{ secrets.ADMIN_PASSWORD }} \
-              AppSecret=${{ secrets.APP_SECRET }} \
-              DomainName=${{ vars.DOMAIN_NAME }} \
-              HostedZoneId=${{ vars.HOSTED_ZONE_ID }} \
-              CloudFrontCertificateArn=${{ vars.CLOUDFRONT_CERT_ARN }}
+            --parameter-overrides $PARAMS
