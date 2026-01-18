@@ -49,6 +49,9 @@ jobs:
       - name: Build Lambda binary
         run: GOOS=linux GOARCH=arm64 CGO_ENABLED=0 go build -tags lambda.norpc -o bootstrap ./cmd/lambda/main.go
 
+      - name: SAM build
+        run: sam build --use-container=false
+
       - name: SAM deploy
         env:
           ADMIN_USER: ${{ vars.ADMIN_USER }}
