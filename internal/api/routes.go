@@ -53,6 +53,7 @@ func SetupRoutes(app *fiber.App) {
 	protected.Post("/ddns/:hostname", ddnsHandler.UpdateDDNS) // HTML forms only support GET/POST
 	protected.Delete("/ddns/:hostname", ddnsHandler.DeleteDDNS)
 	protected.Post("/ddns/:hostname/delete", ddnsHandler.DeleteDDNS) // HTML forms only support GET/POST
+	protected.Post("/ddns/:hostname/update-ip", ddnsHandler.ManualUpdateIP)
 	protected.Post("/ddns/:hostname/regenerate-token", ddnsHandler.RegenerateToken)
 	protected.Get("/ddns/:hostname/history", ddnsHandler.DDNSHistory)
 }

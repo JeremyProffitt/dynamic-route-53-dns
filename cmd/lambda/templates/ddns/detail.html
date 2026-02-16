@@ -67,6 +67,24 @@
                                 {{ if .Record.CurrentIP }}{{ .Record.CurrentIP }}{{ else }}<span class="text-gray-500">Not set</span>{{ end }}
                             </dd>
                         </div>
+
+                        <!-- Manual IP Update -->
+                        <div class="pt-2 border-t border-slate-700">
+                            <dt class="text-sm text-gray-400 mb-2">Update IP Address</dt>
+                            <dd>
+                                <form action="/ddns/{{ .Record.Hostname }}/update-ip" method="POST" class="flex space-x-2">
+                                    <input type="hidden" name="_csrf" value="{{ .CSRFToken }}">
+                                    <input type="text" name="ip" required
+                                           placeholder="e.g. 192.168.1.1"
+                                           value="{{ .Record.CurrentIP }}"
+                                           class="flex-1 px-3 py-1.5 bg-slate-900 border border-slate-600 rounded-md text-white text-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <button type="submit"
+                                            class="px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-md">
+                                        Update
+                                    </button>
+                                </form>
+                            </dd>
+                        </div>
                         <div>
                             <dt class="text-sm text-gray-400">Last Updated</dt>
                             <dd class="text-white">

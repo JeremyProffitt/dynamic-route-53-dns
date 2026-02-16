@@ -148,8 +148,12 @@ func DeleteDDNSRecord(ctx context.Context, hostname string) error {
 }
 
 // CreateUpdateLog creates an update log entry
+// Note: The caller must set log.PK to "LOG#{hostname}" before calling this function
 func CreateUpdateLog(ctx context.Context, log *UpdateLog) error {
-	log.PK = fmt.Sprintf("LOG#%s", log.NewIP)
+	// Only set PK if not already set by caller
+	if log.PK == "" {
+		return fmt.Errorf("PK must be set to LOG#{hostname} by caller")
+	}
 	log.SK = log.Timestamp.Format(time.RFC3339Nano)
 	// Set TTL to 30 days from now
 	log.TTL = time.Now().Add(30 * 24 * time.Hour).Unix()

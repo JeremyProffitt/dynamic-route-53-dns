@@ -76,6 +76,7 @@ func (h *DDNSHandler) CreateDDNS(c *fiber.Ctx) error {
 	hostname := c.FormValue("hostname")
 	zoneID := c.FormValue("zone_id")
 	ttlStr := c.FormValue("ttl")
+	initialIP := c.FormValue("ip")
 
 	ttl, err := strconv.ParseInt(ttlStr, 10, 64)
 	if err != nil {
@@ -83,9 +84,10 @@ func (h *DDNSHandler) CreateDDNS(c *fiber.Ctx) error {
 	}
 
 	result := h.ddnsService.CreateDDNSRecord(c.Context(), &service.DDNSConfig{
-		Hostname: hostname,
-		ZoneID:   zoneID,
-		TTL:      ttl,
+		Hostname:  hostname,
+		ZoneID:    zoneID,
+		TTL:       ttl,
+		InitialIP: initialIP,
 	})
 
 	if !result.Success {
@@ -101,17 +103,23 @@ func (h *DDNSHandler) CreateDDNS(c *fiber.Ctx) error {
 			"Hostname":    hostname,
 			"ZoneID":      zoneID,
 			"TTL":         ttl,
+			"IP":          initialIP,
 		})
 	}
 
 	// Show the token page (token is only shown once)
+	// Use the hostname from result in case it was modified (e.g., auto-suffix added)
+	displayHostname := hostname
+	if result.Hostname != "" {
+		displayHostname = result.Hostname
+	}
 	return c.Render("ddns/token", fiber.Map{
 		"PageTitle":   "Token Created - Dynamic DNS",
 		"CurrentPath": "/ddns",
 		"IsLoggedIn":  true,
 		"Username":    c.Locals("username"),
 		"CSRFToken":   c.Locals("csrf_token"),
-		"Hostname":    hostname,
+		"Hostname":    displayHostname,
 		"Token":       result.Token,
 		"ServerURL":   c.Hostname(),
 	})
@@ -211,6 +219,36 @@ func (h *DDNSHandler) RegenerateToken(c *fiber.Ctx) error {
 		"Regenerated": true,
 		"ServerURL":   c.Hostname(),
 	})
+}
+
+// ManualUpdateIP manually updates the IP address for a DDNS record
+func (h *DDNSHandler) ManualUpdateIP(c *fiber.Ctx) error {
+	hostname := c.Params("hostname")
+	ip := c.FormValue("ip")
+
+	err := h.ddnsService.ManualUpdateIP(c.Context(), hostname, ip)
+
+	record, _ := h.ddnsService.GetDDNSRecord(c.Context(), hostname)
+	history, _ := h.ddnsService.GetUpdateHistory(c.Context(), hostname, 50)
+
+	templateData := fiber.Map{
+		"PageTitle":   hostname + " - Dynamic DNS",
+		"CurrentPath": "/ddns",
+		"IsLoggedIn":  true,
+		"Username":    c.Locals("username"),
+		"CSRFToken":   c.Locals("csrf_token"),
+		"Record":      record,
+		"History":     history,
+		"ServerURL":   c.Hostname(),
+	}
+
+	if err != nil {
+		templateData["FlashError"] = "Failed to update IP: " + err.Error()
+	} else {
+		templateData["FlashSuccess"] = "IP address updated to " + ip
+	}
+
+	return c.Render("ddns/detail", templateData)
 }
 
 // DDNSHistory returns the update history (HTMX partial)

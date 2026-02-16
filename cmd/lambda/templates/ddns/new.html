@@ -62,7 +62,16 @@
                                placeholder="home.example.com"
                                value="{{ .Hostname }}"
                                class="w-full px-3 py-2 bg-slate-900 border border-slate-600 rounded-md text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        <p class="text-gray-500 text-xs mt-1">Must be a valid subdomain in the selected zone</p>
+                        <p class="text-gray-500 text-xs mt-1">Enter a FQDN or just a name (e.g. "home") and the zone suffix will be added automatically</p>
+                    </div>
+
+                    <div>
+                        <label for="ip" class="block text-sm font-medium text-gray-300 mb-2">Initial IP Address (optional)</label>
+                        <input type="text" id="ip" name="ip"
+                               placeholder="e.g. 192.168.1.1"
+                               value="{{ .IP }}"
+                               class="w-full px-3 py-2 bg-slate-900 border border-slate-600 rounded-md text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <p class="text-gray-500 text-xs mt-1">Leave blank to set later via DDNS update or manually</p>
                     </div>
 
                     <div>
