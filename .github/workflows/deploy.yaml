@@ -47,6 +47,7 @@ jobs:
             --capabilities CAPABILITY_IAM \
             --no-confirm-changeset \
             --no-fail-on-empty-changeset \
+            --tags Project=dynamic-route-53-dns CostCenter=home-iot Environment=prod ManagedBy=sam DeployedVia=github-actions Owner=jeremy \
             --parameter-overrides \
               AdminUsername=${{ vars.ADMIN_USER || 'admin' }} \
               AdminPassword=${{ secrets.ADMIN_PASSWORD }} \
